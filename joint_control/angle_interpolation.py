@@ -21,7 +21,7 @@
 
 
 from pid import PIDAgent
-from keyframes import hello
+from keyframes import hello, leftBackToStand
 
 
 class AngleInterpolationAgent(PIDAgent):
@@ -40,10 +40,12 @@ class AngleInterpolationAgent(PIDAgent):
         return super(AngleInterpolationAgent, self).think(perception)
 
     def angle_interpolation(self, keyframes, perception):
-        target_joints = {'LElbowRoll', 'LElbowYaw', 'LHand'}
+        target_joints = {keyframes[0]} # list of joint names
         print(keyframes)
         print(perception)
         # YOUR CODE HERE
+        for key in keyframes[2]:
+            print(key)
 
         return target_joints
 
