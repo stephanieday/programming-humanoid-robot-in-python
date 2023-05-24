@@ -40,7 +40,9 @@ class AngleInterpolationAgent(PIDAgent):
         return super(AngleInterpolationAgent, self).think(perception)
 
     def angle_interpolation(self, keyframes, perception):
-        target_joints = {}
+        target_joints = {'LElbowRoll', 'LElbowYaw', 'LHand'}
+        print(keyframes)
+        print(perception)
         # YOUR CODE HERE
 
         return target_joints
