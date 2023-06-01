@@ -21,7 +21,7 @@
 
 
 from pid import PIDAgent
-from keyframes import hello, leftBackToStand
+from keyframes import hello, leftBackToStand, leftBellyToStand, rightBackToStand, rightBellyToStand, wipe_forehead
 
 
 class AngleInterpolationAgent(PIDAgent):
@@ -32,24 +32,68 @@ class AngleInterpolationAgent(PIDAgent):
                  sync_mode=True):
         super(AngleInterpolationAgent, self).__init__(simspark_ip, simspark_port, teamname, player_id, sync_mode)
         self.keyframes = ([], [], [])
+        self.start_time = self.perception.time
 
     def think(self, perception):
         target_joints = self.angle_interpolation(self.keyframes, perception)
-        target_joints['RHipYawPitch'] = target_joints['LHipYawPitch'] # copy missing joint in keyframes
+        # target_joints['RHipYawPitch'] = target_joints['LHipYawPitch'] # copy missing joint in keyframes
+        # if 'LHipYawPitch' in target_joints.keys():
+        #     target_joints['RHipYawPitch'] = target_joints['LHipYawPitch']
         self.target_joints.update(target_joints)
         return super(AngleInterpolationAgent, self).think(perception)
 
     def angle_interpolation(self, keyframes, perception):
-        target_joints = {keyframes[0]} # list of joint names
-        print(keyframes)
-        print(perception)
-        # YOUR CODE HERE
-        for key in keyframes[2]:
-            print(key)
+        target_joints = {} # list of joint names
+        names, times, keys = keyframes
 
+        curr_t = perception.time - self.start_time
+
+        # Calculate bezier for each joint
+        for idx1, joint_name in enumerate(names):
+            for idx2, time in enumerate(times[idx1]):
+                key = keys[idx1]
+                if idx2 == len(times[idx1])-1:
+                    break
+                i = (curr_t - time) / (times[idx1][idx2 + 1] - time)
+                
+                if curr_t < times[idx1][0]:
+                    p0 = key[0][0]
+                    p1 = key[0][1][2]
+                    p3 = key[1][0]
+                    p2 = key[0][2][2]
+                    target_joints[joint_name] = self.cubic_bezier(p0, p1, p2, p3, i)
+                elif time <= curr_t < times[idx1][idx2 + 1]:
+                    # parameters for all other curves
+                    p0 = key[idx2][0]
+                    p1 = key[idx2][1][2] + p0
+                    p3 = key[idx2 + 1][0]
+                    p2 = key[idx2 + 1][1][2] + p3
+                    target_joints[joint_name] = self.cubic_bezier(p0, p1, p2, p3, i)
+                
+
+        if 'LHipYawPitch' in target_joints.keys():
+            target_joints['RHipYawPitch'] = target_joints['LHipYawPitch']
         return target_joints
+    
+    def cubic_bezier(self, p0, p1, p2, p3, i):
+        """
+            Compute the cubic Bezier interpolation at parameter i.
+            p0, p1, p2, p3 are the control points.
+            i is a value between 0 and 1.
+        """
+        # Calculate blending functions
+        b0 = (1 - i) ** 3
+        b1 = 3 * ((1 - i) ** 2) * i
+        b2 = 3 * (1 - i) * (i ** 2)
+        b3 = i ** 3
+
+        # Compute interpolated bezier at time i
+        bezier = b0 * p0 + b1 * p1 + b2 * p2 + b3 * p3
+        return bezier
+
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = hello()  # CHANGE DIFFERENT KEYFRAMES
+    agent.keyframes = leftBackToStand()  # CHANGE DIFFERENT KEYFRAMES
     agent.run()
+    
