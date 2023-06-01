@@ -37,8 +37,6 @@ class AngleInterpolationAgent(PIDAgent):
     def think(self, perception):
         target_joints = self.angle_interpolation(self.keyframes, perception)
         # target_joints['RHipYawPitch'] = target_joints['LHipYawPitch'] # copy missing joint in keyframes
-        # if 'LHipYawPitch' in target_joints.keys():
-        #     target_joints['RHipYawPitch'] = target_joints['LHipYawPitch']
         self.target_joints.update(target_joints)
         return super(AngleInterpolationAgent, self).think(perception)
 
@@ -79,7 +77,6 @@ class AngleInterpolationAgent(PIDAgent):
         """
             Compute the cubic Bezier interpolation at parameter i.
             p0, p1, p2, p3 are the control points.
-            i is a value between 0 and 1.
         """
         # Calculate blending functions
         b0 = (1 - i) ** 3
