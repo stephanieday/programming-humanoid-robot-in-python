@@ -54,13 +54,13 @@ class AngleInterpolationAgent(PIDAgent):
                     break
                 i = (curr_t - time) / (times[idx1][idx2 + 1] - time)
                 
-                if curr_t < times[idx1][0]:
-                    p0 = key[0][0]
-                    p1 = key[0][1][2]
-                    p3 = key[1][0]
-                    p2 = key[0][2][2]
-                    target_joints[joint_name] = self.cubic_bezier(p0, p1, p2, p3, i)
-                elif time <= curr_t < times[idx1][idx2 + 1]:
+                # if curr_t < times[idx1][0]:
+                #     p0 = key[0][0]
+                #     p1 = key[0][1][2]
+                #     p3 = key[1][0]
+                #     p2 = key[0][2][2]
+                #     target_joints[joint_name] = self.cubic_bezier(p0, p1, p2, p3, i)
+                if time <= curr_t < times[idx1][idx2 + 1]:
                     # parameters for all other curves
                     p0 = key[idx2][0]
                     p1 = key[idx2][1][2] + p0
@@ -91,6 +91,6 @@ class AngleInterpolationAgent(PIDAgent):
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = leftBackToStand()  # CHANGE DIFFERENT KEYFRAMES
+    agent.keyframes = wipe_forehead(0)  # CHANGE DIFFERENT KEYFRAMES
     agent.run()
     
